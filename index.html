@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>新婚祝福</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: #fffaf0;
+      font-family: 'Microsoft Yahei', sans-serif;
+    }
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 0;
+    }
+    .center {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      z-index: 2;
+    }
+    .envelope {
+      width: 100px;
+      height: 100px;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+    }
+    .envelope:hover {
+      transform: scale(1.1);
+    }
+    .message {
+      color: #b22222;
+      font-size: 1.3em;
+      margin-top: 1.5em;
+      white-space: pre-wrap;
+      opacity: 0;
+      transition: opacity 1s ease;
+    }
+    .btn {
+      margin-top: 1.5em;
+      padding: 10px 20px;
+      background: #ff69b4;
+      border: none;
+      color: white;
+      border-radius: 8px;
+      font-size: 1em;
+      cursor: pointer;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+<canvas id="canvas"></canvas>
+
+<!-- 初始信封界面 -->
+<div class="center" id="welcome">
+  <img src="https://cdn-icons-png.flaticon.com/512/561/561127.png" class="envelope" id="envelope" alt="点击查看祝福" />
+  <div style="color:#999; margin-top:0.5em;">点击信封查看祝福</div>
+</div>
+
+<!-- 打开信封后的祝福界面 -->
+<div class="center" id="content" style="display:none;">
+  <div class="message" id="blessing"></div>
+  <button class="btn" onclick="replay()">再看一次</button>
+</div>
+
+<!-- 背景音乐 -->
+<audio id="bgm" src="https://cdn.pixabay.com/audio/2022/03/02/audio_1c1cbd3fc2.mp3" preload="auto" loop></audio>
+
+<script>
+  const msg = `亲爱的表哥表嫂：
+
+祝你们新婚快乐、百年好合！
+虽然我未能亲临现场，
+但满满祝福一定送达 ❤️
+
+愿你们相濡以沫，共度余生！
+
+——表弟敬上`;
+
+  const blessing = document.getElementById("blessing");
+  const audio = document.getElementById("bgm");
+  const envelope = document.getElementById("envelope");
+  const welcome = document.getElementById("welcome");
+  const content = document.getElementById("content");
+  const btn = document.querySelector(".btn");
+
+  let typingInterval;
+  let i = 0;
+
+  function typeEffect() {
+    i = 0;
+    blessing.textContent = "";
+    blessing.style.opacity = "1";
+    typingInterval = setInterval(() => {
+      if (i < msg.length) {
+        blessing.textContent += msg[i++];
+      } else {
+        clearInterval(typingInterval);
+      }
+    }, 70);
+  }
+
+  function replay() {
+    clearInterval(typingInterval);
+    typeEffect();
+    audio.play();
+  }
+
+  envelope.addEventListener("click", () => {
+    welcome.style.display = "none";
+    content.style.display = "block";
+    typeEffect();
+    audio.play().catch(() => {});
+    btn.style.display = "inline-block";
+  });
+
+  document.addEventListener("click", () => {
+    audio.play().catch(() => {});
+  }, { once: true });
+
+  // 爱心背景动画
+  const canvas = document.getElementById("canvas");
+  const ctx = canvas.getContext("2d");
+  let hearts = [];
+
+  function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  window.addEventListener("resize", resizeCanvas);
+  resizeCanvas();
+
+  function drawHeart(x, y, size, color) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.scale(size, size);
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.bezierCurveTo(0, -3, -5, -3, -5, 0);
+    ctx.bezierCurveTo(-5, 3, 0, 5, 0, 7);
+    ctx.bezierCurveTo(0, 5, 5, 3, 5, 0);
+    ctx.bezierCurveTo(5, -3, 0, -3, 0, 0);
+    ctx.fillStyle = color;
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function generateHeart() {
+    return {
+      x: Math.random() * canvas.width,
+      y: canvas.height + 10,
+      size: Math.random() * 0.5 + 0.5,
+      speed: Math.random() * 2 + 1,
+      color: `hsl(${Math.random() * 360}, 100%, 75%)`
+    };
+  }
+
+  function animateHearts() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (Math.random() < 0.25) hearts.push(generateHeart());
+    hearts.forEach((heart, index) => {
+      heart.y -= heart.speed;
+      drawHeart(heart.x, heart.y, heart.size, heart.color);
+      if (heart.y < -10) hearts.splice(index, 1);
+    });
+    requestAnimationFrame(animateHearts);
+  }
+
+  animateHearts();
+</script>
+</body>
+</html>
